@@ -36,7 +36,15 @@ func _process(_delta):
 	var state = _client.get_ready_state()
 	if state == WebSocketPeer.STATE_OPEN:
 		while _client.get_available_packet_count():
-			chatLog.append_text(_client.get_packet().get_string_from_utf8())
+			var json = JSON.new()
+			var messageData = _client.get_packet().get_string_from_utf8()
+			var message = json.parse(messageData)
+			if message == OK:
+				var data = json.data
+				
+				add_message(data.username, data.content, group_idx_locator(data.group))
+			else:
+				chatLog.append_text("An error occurred in recieving a message!")
 	elif state == WebSocketPeer.STATE_CLOSING:
 		# Keep polling to achieve proper close.
 		pass
@@ -60,11 +68,24 @@ func _input(event):
 			updateUsernameButton.grab_focus()
 			return
 
+func group_idx_locator(name: String):
+	var idx = 2
+	for i in groups.size():
+		if name == groups[i]['name']:
+			idx = i
+			break
+	return idx
+
 func changeGroup():
 	group_index += 1
 	if group_index > (groups.size() - 2):
 		group_index = 0
 	inputLabel.text = '[' + groups[group_index]['name'] + ']'
+	_client.send_text(JSON.stringify({
+		'content': 'SWITCH GROUP', 
+		'username': 'SYSTEM', 
+		'group': groups[group_index]['name']
+		}))
 	inputLabel.set("theme_override_colors/font_color", Color(groups[group_index]['color']))
 
 func format_message(senderName: String, text: String, group = 0):
@@ -83,7 +104,11 @@ func text_submitted(text):
 	if text == '':
 		return
 	add_message(username, text, group_index)
-	_client.send_text(format_message(username, text, group_index))
+	_client.send_text(JSON.stringify({
+		'content': text, 
+		'username': username, 
+		'group': groups[group_index]['name']
+		}))
 	messageInputField.clear()
 	
 func updateServerConnection():
@@ -91,6 +116,7 @@ func updateServerConnection():
 	serverAddress = addressInputField.text
 	add_system_message('Removing ' + prevServer + ' & connecting to ' + serverAddress)
 	var res = _client.connect_to_url(serverAddress)
+	print(res)
 	if res != OK:
 		add_system_message("Could not connect to given server.", true)
 		return

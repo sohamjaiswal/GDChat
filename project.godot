@@ -14,7 +14,3 @@ config/name="GDChat"
 run/main_scene="res://control.tscn"
 config/features=PackedStringArray("4.1", "Forward Plus")
 config/icon="res://icon.svg"
-
-[display]
-
-window/stretch/scale=2.0

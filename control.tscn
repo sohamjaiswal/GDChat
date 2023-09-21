@@ -40,7 +40,7 @@ text = "Enter Server Address: "
 [node name="LineEdit" type="LineEdit" parent="VBoxContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "ws://127.0.0.1:8080/ws"
+text = "ws://localhost:8080/ws"
 
 [node name="Button" type="Button" parent="VBoxContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2
